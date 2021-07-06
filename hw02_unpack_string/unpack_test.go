@@ -16,11 +16,11 @@ func TestUnpack(t *testing.T) {
 		{input: "abccd", expected: "abccd"},
 		{input: "", expected: ""},
 		{input: "aaa0b", expected: "aab"},
-		// uncomment if task with asterisk completed
-		// {input: `qwe\4\5`, expected: `qwe45`},
-		// {input: `qwe\45`, expected: `qwe44444`},
-		// {input: `qwe\\5`, expected: `qwe\\\\\`},
-		// {input: `qwe\\\3`, expected: `qwe\3`},
+
+		// The new cases
+		{input: "d\n5abc", expected: "d\n\n\n\n\nabc"},
+		{input: "d\n\b2abc", expected: "d\n\b\babc"},
+		{input: " s2v", expected: "ssv"},
 	}
 
 	for _, tc := range tests {
@@ -33,13 +33,21 @@ func TestUnpack(t *testing.T) {
 	}
 }
 
-func TestUnpackInvalidString(t *testing.T) {
-	invalidStrings := []string{"3abc", "45", "aaa10b"}
+// The new cases
+
+func TestUnpackStartingAtDigit(t *testing.T) {
+	invalidStrings := []string{"3abc", "45"}
 	for _, tc := range invalidStrings {
 		tc := tc
 		t.Run(tc, func(t *testing.T) {
 			_, err := Unpack(tc)
-			require.Truef(t, errors.Is(err, ErrInvalidString), "actual error %q", err)
+			require.Truef(t, errors.Is(err, ErrStartingAtDigit), "actual error %q", err)
 		})
 	}
+}
+
+func TestUnpackContainsNumber(t *testing.T) {
+	const rawString = "aaa10b"
+	_, err := Unpack(rawString)
+	require.Truef(t, errors.Is(err, ErrContainsNumber), "actual error %q", err)
 }
