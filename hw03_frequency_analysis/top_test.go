@@ -80,3 +80,17 @@ func TestTop10(t *testing.T) {
 		}
 	})
 }
+
+// The new cases
+
+func TestRawStrContainsOnlyOneWord(t *testing.T) {
+	const rawStr = "aaa"
+	result := Top10(rawStr)
+	require.Equal(t, []string{"aaa"}, result)
+}
+
+func TestRawStrContainsLessThan10Words(t *testing.T) {
+	const rawStr = "aaa bbb ccc"
+	result := Top10(rawStr)
+	require.Equal(t, []string{"aaa", "bbb", "ccc"}, result)
+}
