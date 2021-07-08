@@ -41,7 +41,12 @@ func Top10(rawStr string) []string {
 		frequencyMoreLess := wordsContainer[i].frequency > wordsContainer[j].frequency
 		frequencyEquals := wordsContainer[i].frequency == wordsContainer[j].frequency
 		wordsMoreLess := wordsContainer[i].word < wordsContainer[j].word
-		return frequencyMoreLess || frequencyEquals && wordsMoreLess
+
+		if frequencyEquals {
+			return wordsMoreLess
+		}
+
+		return frequencyMoreLess
 	})
 
 	if len(wordsContainer) > 10 {
