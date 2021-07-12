@@ -35,18 +35,11 @@ func Top10(rawStr string) []string {
 	}
 
 	sort.Slice(wordsContainer, func(i, j int) bool {
-		// to make the code line shorter
-		// create the following variables
-		// "frequencyMoreLess", "frequencyEquals", "wordsMoreLess"
-		frequencyMoreLess := wordsContainer[i].frequency > wordsContainer[j].frequency
-		frequencyEquals := wordsContainer[i].frequency == wordsContainer[j].frequency
-		wordsMoreLess := wordsContainer[i].word < wordsContainer[j].word
-
-		if frequencyEquals {
-			return wordsMoreLess
+		if wordsContainer[i].frequency == wordsContainer[j].frequency {
+			return wordsContainer[i].word < wordsContainer[j].word
 		}
 
-		return frequencyMoreLess
+		return wordsContainer[i].frequency > wordsContainer[j].frequency
 	})
 
 	if len(wordsContainer) > 10 {
