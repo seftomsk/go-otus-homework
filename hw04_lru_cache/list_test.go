@@ -49,3 +49,83 @@ func TestList(t *testing.T) {
 		require.Equal(t, []int{70, 80, 60, 40, 10, 30, 50}, elems)
 	})
 }
+
+// The new cases
+
+func TestRemoveFromEmptyList(t *testing.T) {
+	l := NewList()
+	item := &ListItem{Value: 10}
+	l.Remove(item)
+	require.Equal(t, 0, l.Len())
+	require.Nil(t, l.Front())
+	require.Nil(t, l.Back())
+}
+
+func TestRemoveStrangerItem(t *testing.T) {
+	l := NewList()
+	l.PushFront(10)
+	l.PushBack(20)
+	item := &ListItem{Value: 10}
+	l.Remove(item)
+	require.Equal(t, 2, l.Len())
+	require.Equal(t, 10, l.Front().Value)
+	require.Equal(t, 20, l.Back().Value)
+}
+
+func TestCallMethodsWithNil(t *testing.T) {
+	t.Run("List.Remove", func(t *testing.T) {
+		l := NewList()
+		l.Remove(nil)
+		require.Equal(t, 0, l.Len())
+	})
+
+	t.Run("List.MoveToFront", func(t *testing.T) {
+		l := NewList()
+		l.MoveToFront(nil)
+		require.Equal(t, 0, l.Len())
+	})
+}
+
+func createListWithNumbers(count int) List {
+	l := NewList()
+	for i := 1; i <= count; i++ {
+		l.PushBack(i * 10)
+	}
+	return l
+}
+
+func TestRemoveTheFirstOrMiddleOrLastItem(t *testing.T) {
+	const count = 4
+	t.Run("List.Remove('the first item')", func(t *testing.T) {
+		l := createListWithNumbers(count)
+		item := l.Front()
+		l.Remove(item)
+		require.Equal(t, 3, l.Len())
+	})
+
+	t.Run("List.Remove('the middle item')", func(t *testing.T) {
+		l := createListWithNumbers(count)
+		item := l.Front().Next
+		l.Remove(item)
+		require.Equal(t, 3, l.Len())
+	})
+
+	t.Run("List.Remove('the last item')", func(t *testing.T) {
+		l := createListWithNumbers(count)
+		item := l.Back()
+		l.Remove(item)
+		require.Equal(t, 3, l.Len())
+	})
+}
+
+func TestOnlyOneItemIsFirstAndLast(t *testing.T) {
+	l := NewList()
+	l.PushFront(20)
+	require.NotNil(t, l.Front())
+	require.NotNil(t, l.Back())
+	l = NewList()
+	item := &ListItem{Value: 10}
+	l.MoveToFront(item)
+	require.NotNil(t, l.Front())
+	require.NotNil(t, l.Back())
+}
