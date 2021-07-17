@@ -25,6 +25,10 @@ type cacheItem struct {
 }
 
 func NewCache(capacity int) Cache {
+	if capacity < 1 {
+		capacity = 1
+	}
+
 	cache := &lruCache{capacity: capacity}
 	initLRUCache(cache)
 
@@ -36,14 +40,15 @@ func (cache *lruCache) getCacheItem(elem *ListItem) *cacheItem {
 }
 
 func (cache *lruCache) Set(key Key, value interface{}) bool {
+	if item, ok := cache.items[key]; ok {
+		cache.getCacheItem(item).value = value
+		cache.queue.MoveToFront(item)
+		return true
+	}
+
 	cItem := &cacheItem{
 		key:   string(key),
 		value: value,
-	}
-	if item, ok := cache.items[key]; ok {
-		item.Value = cItem
-		cache.queue.MoveToFront(item)
-		return true
 	}
 
 	item := cache.queue.PushFront(cItem)
@@ -53,10 +58,9 @@ func (cache *lruCache) Set(key Key, value interface{}) bool {
 		return false
 	}
 
-	if lastItem := cache.queue.Back(); lastItem != nil {
-		cache.queue.Remove(lastItem)
-		delete(cache.items, Key(cache.getCacheItem(lastItem).key))
-	}
+	lastItem := cache.queue.Back()
+	cache.queue.Remove(lastItem)
+	delete(cache.items, Key(cache.getCacheItem(lastItem).key))
 
 	return false
 }
@@ -67,7 +71,7 @@ func (cache *lruCache) Get(key Key) (interface{}, bool) {
 	}
 
 	item := cache.items[key]
-	cache.queue.PushFront(item)
+	cache.queue.MoveToFront(item)
 
 	return cache.getCacheItem(item).value, true
 }

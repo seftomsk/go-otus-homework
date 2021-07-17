@@ -80,14 +80,19 @@ func (l *list) Remove(i *ListItem) {
 	prev := i.Prev
 	next := i.Next
 	i.Next, i.Prev = nil, nil
+
 	if prev != nil {
 		prev.Next = next
 	} else {
 		l.firstElem = next
 	}
+
 	if next != nil {
 		next.Prev = prev
+	} else {
+		l.lastElem = prev
 	}
+
 	l.count--
 }
 
@@ -104,13 +109,22 @@ func (l *list) MoveToFront(item *ListItem) {
 	}
 
 	first := l.firstElem
-	prevForItem := item.Prev
-	prevForItem.Next = nil
+	first.Prev = item
+
+	prev := item.Prev
+	next := item.Next
+	prev.Next = next
+
+	if next != nil {
+		next.Prev = prev
+	} else {
+		l.lastElem = prev
+	}
+
 	item.Prev = nil
 	item.Next = first
-	first.Prev = item
+
 	l.firstElem = item
-	l.lastElem = prevForItem
 }
 
 func NewList() List {
