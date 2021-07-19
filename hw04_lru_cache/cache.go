@@ -24,9 +24,10 @@ type cacheItem struct {
 	value interface{}
 }
 
+// capacity must be more than 0.
 func NewCache(capacity int) Cache {
 	if capacity < 1 {
-		capacity = 1
+		panic("To use cache, you must pass the positive capacity")
 	}
 
 	cache := &lruCache{capacity: capacity}

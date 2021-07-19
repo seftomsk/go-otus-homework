@@ -55,7 +55,9 @@ func TestList(t *testing.T) {
 func TestRemoveFromEmptyList(t *testing.T) {
 	l := NewList()
 	item := &ListItem{Value: 10}
-	l.Remove(item)
+	require.Panics(t, func() {
+		l.Remove(item)
+	})
 	require.Equal(t, 0, l.Len())
 	require.Nil(t, l.Front())
 	require.Nil(t, l.Back())
@@ -66,7 +68,9 @@ func TestRemoveStrangerItem(t *testing.T) {
 	l.PushFront(10)
 	l.PushBack(20)
 	item := &ListItem{Value: 10}
-	l.Remove(item)
+	require.Panics(t, func() {
+		l.Remove(item)
+	})
 	require.Equal(t, 2, l.Len())
 	require.Equal(t, 10, l.Front().Value)
 	require.Equal(t, 20, l.Back().Value)
@@ -75,13 +79,17 @@ func TestRemoveStrangerItem(t *testing.T) {
 func TestCallMethodsWithNil(t *testing.T) {
 	t.Run("List.Remove", func(t *testing.T) {
 		l := NewList()
-		l.Remove(nil)
+		require.Panics(t, func() {
+			l.Remove(nil)
+		})
 		require.Equal(t, 0, l.Len())
 	})
 
 	t.Run("List.MoveToFront", func(t *testing.T) {
 		l := NewList()
-		l.MoveToFront(nil)
+		require.Panics(t, func() {
+			l.MoveToFront(nil)
+		})
 		require.Equal(t, 0, l.Len())
 	})
 }
@@ -125,7 +133,7 @@ func TestOnlyOneItemIsFirstAndLast(t *testing.T) {
 	require.NotNil(t, l.Back())
 	l = NewList()
 	item := &ListItem{Value: 10}
-	l.MoveToFront(item)
+	l.PushFront(item)
 	require.NotNil(t, l.Front())
 	require.NotNil(t, l.Back())
 }

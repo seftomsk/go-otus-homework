@@ -69,13 +69,16 @@ func (l *list) PushBack(v interface{}) *ListItem {
 
 func (l *list) Remove(i *ListItem) {
 	if l.count == 0 {
-		return
+		panic("List is empty")
+	}
+	if l.count == 1 && l.firstElem != i {
+		panic("List doesn't contain the passed item")
 	}
 	if i == nil {
-		return
+		panic("You have passed the nil instead ListItem")
 	}
 	if i.Prev == nil && i.Next == nil {
-		return
+		panic("List doesn't contain the passed item")
 	}
 	prev := i.Prev
 	next := i.Next
@@ -98,14 +101,16 @@ func (l *list) Remove(i *ListItem) {
 
 func (l *list) MoveToFront(item *ListItem) {
 	if item == nil {
-		return
+		panic("You have passed the nil instead ListItem")
 	}
 	if l.count == 0 {
-		l.init(item)
-		return
+		panic("List is empty")
 	}
 	if item == l.firstElem {
 		return
+	}
+	if item.Prev == nil && item.Next == nil {
+		panic("List doesn't contain the passed item")
 	}
 
 	first := l.firstElem
