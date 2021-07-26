@@ -63,19 +63,6 @@ func TestRemoveFromEmptyList(t *testing.T) {
 	require.Nil(t, l.Back())
 }
 
-func TestRemoveStrangerItem(t *testing.T) {
-	l := NewList()
-	l.PushFront(10)
-	l.PushBack(20)
-	item := &ListItem{Value: 10}
-	require.Panics(t, func() {
-		l.Remove(item)
-	})
-	require.Equal(t, 2, l.Len())
-	require.Equal(t, 10, l.Front().Value)
-	require.Equal(t, 20, l.Back().Value)
-}
-
 func TestCallMethodsWithNil(t *testing.T) {
 	t.Run("List.Remove", func(t *testing.T) {
 		l := NewList()
