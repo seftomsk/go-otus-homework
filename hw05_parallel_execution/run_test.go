@@ -68,3 +68,13 @@ func TestRun(t *testing.T) {
 		require.LessOrEqual(t, int64(elapsedTime), int64(sumTime/2), "tasks were run sequentially?")
 	})
 }
+
+// The new case
+
+func TestParamMLessOrEqualsZero(t *testing.T) {
+	err := Run([]Task{func() error {
+		return nil
+	}}, 10, 0)
+	require.Error(t, err)
+	require.Truef(t, errors.Is(err, ErrErrorsLimitExceeded), "actual error %q", err)
+}
