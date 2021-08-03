@@ -26,7 +26,7 @@ func Run(tasks []Task, n, m int) error {
 		go worker(doneCh, taskChan, errorCh, &wg)
 	}
 
-	errorCount := 0
+	var errorCount int
 	currentTask := 0
 
 	wg.Add(1)
