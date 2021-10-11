@@ -3,6 +3,7 @@ package hw09structvalidator
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -42,10 +43,14 @@ func TestValidate(t *testing.T) {
 		expectedErr error
 	}{
 		{
-			// Place your code here.
+			in: Response{
+				Code: 10,
+			},
+			expectedErr: ValidationErrors{ValidationError{
+				Field: "Code",
+				Err:   ErrIn,
+			}},
 		},
-		// ...
-		// Place your code here.
 	}
 
 	for i, tt := range tests {
@@ -53,7 +58,8 @@ func TestValidate(t *testing.T) {
 			tt := tt
 			t.Parallel()
 
-			// Place your code here.
+			err := Validate(tt.in)
+			require.ErrorIs(t, err, ErrIn)
 			_ = tt
 		})
 	}
