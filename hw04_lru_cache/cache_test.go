@@ -66,39 +66,43 @@ func TestCache(t *testing.T) {
 			require.Nil(t, val)
 			require.False(t, ok)
 		}
-
-		c = NewCache(3)
-		c.Set("a", 1)
-		c.Set("b", 2)
-		c.Set("c", 3)
-		c.Set("d", 4)
-		v, ok := c.Get("a")
-		require.Nil(t, v)
-		require.False(t, ok)
-
-		c = NewCache(3)
-		c.Set("a", 1)
-		c.Set("b", 2)
-		c.Set("c", 3)
-		// c = [c=3, b=2, a=1]
-		c.Set("b", 10)
-		// c = [b=10, c=3, a=1]
-		c.Set("c", 20)
-		// c = [c=20, b=10, a=1]
-		c.Get("a")
-		// c = [a=1, c=20, b=10]
-		c.Set("d", 40)
-		// c = [d=40, a=1, c=20]
-		v, ok = c.Get("b")
-		require.Nil(t, v)
-		require.False(t, ok)
-		_, ok = c.Get("a")
-		require.True(t, ok)
-		_, ok = c.Get("c")
-		require.True(t, ok)
-		_, ok = c.Get("d")
-		require.True(t, ok)
 	})
+}
+
+func TestCorrectOrderOfElemsInLRU(t *testing.T) {
+	c := NewCache(3)
+	c.Set("a", 1)
+	c.Set("b", 2)
+	c.Set("c", 3)
+	// c = [c=3, b=2, a=1]
+	c.Set("b", 10)
+	// c = [b=10, c=3, a=1]
+	c.Set("c", 20)
+	// c = [c=20, b=10, a=1]
+	c.Get("a")
+	// c = [a=1, c=20, b=10]
+	c.Set("d", 40)
+	// c = [d=40, a=1, c=20]
+	v, ok := c.Get("b")
+	require.Nil(t, v)
+	require.False(t, ok)
+	_, ok = c.Get("a")
+	require.True(t, ok)
+	_, ok = c.Get("c")
+	require.True(t, ok)
+	_, ok = c.Get("d")
+	require.True(t, ok)
+}
+
+func TestPushElemsFromLRU(t *testing.T) {
+	c := NewCache(3)
+	c.Set("a", 1)
+	c.Set("b", 2)
+	c.Set("c", 3)
+	c.Set("d", 4)
+	v, ok := c.Get("a")
+	require.Nil(t, v)
+	require.False(t, ok)
 }
 
 func TestCacheMultithreading(t *testing.T) {
