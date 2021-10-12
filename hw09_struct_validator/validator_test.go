@@ -2,6 +2,7 @@ package hw09structvalidator
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -42,25 +43,30 @@ func TestValidate(t *testing.T) {
 		in          interface{}
 		expectedErr error
 	}{
-		{
-			in: Response{
-				Code: 10,
-			},
-			expectedErr: ValidationErrors{ValidationError{
-				Field: "Code",
-				Err:   ErrIn,
-			}},
-		},
+		//{App{Version: "1234"}, ErrLength},
+		//{App{Version: "12345"}, nil},
+		{App{Version: "123456"}, ValidationErrors{ValidationError{Field: "Version", Err: ErrLength}}},
 	}
 
 	for i, tt := range tests {
+		tt := tt
 		t.Run(fmt.Sprintf("case %d", i), func(t *testing.T) {
-			tt := tt
 			t.Parallel()
 
 			err := Validate(tt.in)
-			require.ErrorIs(t, err, ErrIn)
-			_ = tt
+			//if tt.expectedErr == nil {
+			//	require.NoError(t, err)
+			//} else {
+			//	require.EqualError(t, err, tt.expectedErr.Error())
+			//}
+
+			var vErrors ValidationErrors
+			require.ErrorAs(t, err, &vErrors)
+			if errors.As(err, &vErrors) {
+				for _, r := range vErrors {
+					require.ErrorIs(t, r.Err, tt.expectedErr)
+				}
+			}
 		})
 	}
 }

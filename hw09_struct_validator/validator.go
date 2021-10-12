@@ -19,7 +19,7 @@ type ValidationErrors []ValidationError
 func (v ValidationErrors) Error() string {
 	strBuilder := strings.Builder{}
 	for _, err := range v {
-		strBuilder.WriteString(err.Field + " - " + err.Err.Error() + "\n")
+		strBuilder.WriteString(fmt.Sprintf("Field: %s: %s\n", err.Field, err.Err))
 	}
 	return strBuilder.String()
 }
@@ -80,7 +80,7 @@ func lenValidator(fv, constraint, constraintV string, field reflect.StructField)
 	if strLen != num {
 		vError := ValidationError{
 			Field: field.Name,
-			Err:   fmt.Errorf("string length must be %v: %w", num, ErrLength),
+			Err:   fmt.Errorf("%w", ErrLength),
 		}
 		vErrors = append(vErrors, vError)
 		return false, nil
