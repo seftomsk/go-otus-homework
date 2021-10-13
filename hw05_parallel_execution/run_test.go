@@ -76,5 +76,5 @@ func TestParamMLessOrEqualsZero(t *testing.T) {
 		return nil
 	}}, 10, 0)
 	require.Error(t, err)
-	require.Truef(t, errors.Is(err, ErrErrorsLimitExceeded), "actual error %q", err)
+	require.ErrorIs(t, err, ErrErrorsLimitExceeded)
 }
