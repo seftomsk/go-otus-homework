@@ -1,7 +1,7 @@
 {
   "version": "0.1.0",
   "environment": "dev",
-  "storage": "postgres",
+  "storage": "memory",
   "database": {
     "host": "localhost",
     "port": "5432",
