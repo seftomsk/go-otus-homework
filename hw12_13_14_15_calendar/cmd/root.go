@@ -57,5 +57,6 @@ func initConfig() {
 	err = cfg.Validate()
 	if err != nil {
 		_, _ = os.Stderr.Write([]byte("initConfig - config.Validate: " + err.Error() + "\n"))
+		os.Exit(1)
 	}
 }

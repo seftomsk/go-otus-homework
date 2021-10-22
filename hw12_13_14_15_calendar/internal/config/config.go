@@ -45,7 +45,7 @@ type Database struct {
 }
 
 type Logger struct {
-	LogLevel string `json:"log_level"`
+	LogLevel string `json:"loglevel"`
 	FileName string `json:"filename"`
 	StdErr   bool   `json:"stderr"`
 }
@@ -115,7 +115,6 @@ func validateSupportedValues(c Config) error {
 	if _, ok := supportedStorages[strings.ToLower(c.Storage)]; !ok {
 		return fmt.Errorf("validateSupportedValues - storage: %w", ErrInvalidValue)
 	}
-
 	if _, ok := supportedLogLevels[strings.ToLower(c.Logger.LogLevel)]; !ok {
 		return fmt.Errorf("validateSupportedValues - logger - log_level: %w", ErrInvalidValue)
 	}

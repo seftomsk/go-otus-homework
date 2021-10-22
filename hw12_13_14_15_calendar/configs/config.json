@@ -14,7 +14,7 @@
     "port": "8888"
   },
   "logger": {
-    "log_level": "info",
+    "loglevel": "info",
     "stderr": true,
     "filename": "all.log"
   }
