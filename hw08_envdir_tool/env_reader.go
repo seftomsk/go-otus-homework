@@ -70,6 +70,7 @@ func ReadDir(dir string) (Environment, error) {
 				NeedRemove: false,
 			}
 		}
+		_ = file.Close()
 	}
 
 	return env, nil
