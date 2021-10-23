@@ -1,3 +1,5 @@
+// +build postgres_test
+
 package sqlstorage_test
 
 import (
