@@ -11,7 +11,7 @@ import (
 )
 
 type User struct {
-	Email    string
+	Email string
 }
 
 type DomainStat map[string]int
