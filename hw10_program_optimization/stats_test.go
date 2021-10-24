@@ -1,9 +1,11 @@
+//go:build !bench
 // +build !bench
 
 package hw10programoptimization
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -36,4 +38,15 @@ func TestGetDomainStat(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, DomainStat{}, result)
 	})
+}
+
+func TestEmptyDomain(t *testing.T) {
+	_, err := GetDomainStat(strings.NewReader(""), "")
+	require.Error(t, err)
+}
+
+func TestEmptyReader(t *testing.T) {
+	res, err := GetDomainStat(strings.NewReader(""), "gov")
+	require.Empty(t, res)
+	require.NoError(t, err)
 }
