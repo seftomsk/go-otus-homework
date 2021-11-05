@@ -50,8 +50,59 @@ func TestCache(t *testing.T) {
 	})
 
 	t.Run("purge logic", func(t *testing.T) {
-		// Write me
+		const capacity = 5
+		c := NewCache(capacity)
+		for i := 1; i <= capacity; i++ {
+			c.Set(Key("a"+strconv.Itoa(i)), i*10)
+		}
+		for i := 1; i <= capacity; i++ {
+			val, _ := c.Get(Key("a" + strconv.Itoa(i)))
+			require.Equal(t, i*10, val)
+		}
+		c.Clear()
+
+		for i := 1; i <= capacity; i++ {
+			val, ok := c.Get(Key("a" + strconv.Itoa(i)))
+			require.Nil(t, val)
+			require.False(t, ok)
+		}
 	})
+}
+
+func TestCorrectOrderOfElemsInLRU(t *testing.T) {
+	c := NewCache(3)
+	c.Set("a", 1)
+	c.Set("b", 2)
+	c.Set("c", 3)
+	// c = [c=3, b=2, a=1]
+	c.Set("b", 10)
+	// c = [b=10, c=3, a=1]
+	c.Set("c", 20)
+	// c = [c=20, b=10, a=1]
+	c.Get("a")
+	// c = [a=1, c=20, b=10]
+	c.Set("d", 40)
+	// c = [d=40, a=1, c=20]
+	v, ok := c.Get("b")
+	require.Nil(t, v)
+	require.False(t, ok)
+	_, ok = c.Get("a")
+	require.True(t, ok)
+	_, ok = c.Get("c")
+	require.True(t, ok)
+	_, ok = c.Get("d")
+	require.True(t, ok)
+}
+
+func TestPushElemsFromLRU(t *testing.T) {
+	c := NewCache(3)
+	c.Set("a", 1)
+	c.Set("b", 2)
+	c.Set("c", 3)
+	c.Set("d", 4)
+	v, ok := c.Get("a")
+	require.Nil(t, v)
+	require.False(t, ok)
 }
 
 func TestCacheMultithreading(t *testing.T) {
