@@ -1,27 +1,58 @@
-package memory_test
+// +build postgres_test
+
+package sqlstorage_test
 
 import (
 	"context"
 	"strconv"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/seftomsk/go-otus-homework/hw12_13_14_15_calendar/internal/app"
 	"github.com/seftomsk/go-otus-homework/hw12_13_14_15_calendar/internal/storage"
-	"github.com/seftomsk/go-otus-homework/hw12_13_14_15_calendar/internal/storage/memory"
+	sqlstorage "github.com/seftomsk/go-otus-homework/hw12_13_14_15_calendar/internal/storage/postgres"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
+const (
+	user   = "admin"
+	pwd    = "admin"
+	host   = "localhost"
+	port   = "5432"
+	dbname = "mydb"
+)
+
 type StorageSuite struct {
 	suite.Suite
-	rep *memory.InMemory
+	mu  sync.Mutex
 	ctx context.Context
+	rep *sqlstorage.InPostgres
+	ids []string
+}
+
+func (e *StorageSuite) SetupSuite() {
+	rep, err := sqlstorage.New(user, pwd, host, port, dbname)
+	require.NoError(e.T(), err)
+	e.rep = rep
 }
 
 func (e *StorageSuite) SetupTest() {
-	e.rep = memory.New()
 	e.ctx = context.Background()
+}
+
+func (e *StorageSuite) TearDownTest() {
+	e.mu.Lock()
+	for _, id := range e.ids {
+		_ = e.rep.Delete(context.Background(), id)
+	}
+	e.mu.Unlock()
+}
+
+func (e *StorageSuite) TearDownSuite() {
+	err := e.rep.Close()
+	require.NoError(e.T(), err)
 }
 
 func TestSuite(t *testing.T) {
@@ -29,7 +60,7 @@ func TestSuite(t *testing.T) {
 }
 
 func (e *StorageSuite) TestInvalidInitializationGetErr() {
-	rep := memory.InMemory{}
+	rep := sqlstorage.InPostgres{}
 
 	_, err := rep.GetByID(context.Background(), "")
 	require.ErrorIs(e.T(), err, storage.ErrInvalidInitialization)
@@ -103,6 +134,9 @@ func (e *StorageSuite) TestGetByDatetimeWithoutErr() {
 	event := storage.NewEvent("1", "1", "", storage.EventDescription{}, now, time.Second, time.Second)
 	err := e.rep.Create(e.ctx, event)
 	require.NoError(e.T(), err)
+	e.mu.Lock()
+	e.ids = append(e.ids, event.ID())
+	e.mu.Unlock()
 
 	res, err := e.rep.GetByDatetime(e.ctx, now)
 	require.NoError(e.T(), err)
@@ -117,9 +151,13 @@ func (e *StorageSuite) TestGetByDatetimeEventNotFoundGetErr() {
 
 // GetByID.
 func (e *StorageSuite) TestGetByIdWithoutErr() {
-	event := storage.NewEvent("1", "1", "", storage.EventDescription{}, time.Now(), time.Second, time.Second)
+	now := time.Now().UTC()
+	event := storage.NewEvent("1", "1", "", storage.EventDescription{}, now, time.Second, time.Second)
 	err := e.rep.Create(e.ctx, event)
 	require.NoError(e.T(), err)
+	e.mu.Lock()
+	e.ids = append(e.ids, event.ID())
+	e.mu.Unlock()
 
 	res, err := e.rep.GetByID(e.ctx, event.ID())
 	require.NoError(e.T(), err)
@@ -151,6 +189,9 @@ func (e *StorageSuite) TestGetByDateRangeWithoutErr() {
 			time.Second)
 		err := e.rep.Create(e.ctx, event)
 		require.NoError(e.T(), err)
+		e.mu.Lock()
+		e.ids = append(e.ids, event.ID())
+		e.mu.Unlock()
 
 		if i >= 1 && i <= 31 {
 			thirtyOneDays[strconv.Itoa(i)] = event
@@ -201,7 +242,6 @@ func (e *StorageSuite) TestGetByDateRangeWithoutErr() {
 	for _, tc := range testCases {
 		tc := tc
 		e.T().Run(tc.name, func(t *testing.T) {
-			t.Parallel()
 			res, err := e.rep.GetByDateRange(e.ctx, tc.start, tc.end)
 			require.NoError(t, err)
 			require.Equal(t, tc.want, res)
@@ -226,8 +266,38 @@ func (e *StorageSuite) TestGetByDateRangeNotFoundGetErr() {
 }
 
 // Create.
+func (e *StorageSuite) TestCreateWhenDescriptionIsNotNilWithoutErr() {
+	now := time.Now().UTC()
+	testCases := []struct {
+		name     string
+		id       string
+		userID   string
+		datetime time.Time
+	}{
+		{name: "id1 userId1", id: "1", userID: "1", datetime: now.Add(time.Second)},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		e.T().Run(tc.name, func(t *testing.T) {
+			event := storage.NewEvent(
+				tc.id,
+				tc.userID,
+				"",
+				storage.EventDescription{Data: "Desc", Valid: true},
+				tc.datetime,
+				time.Second,
+				time.Second)
+			err := e.rep.Create(e.ctx, event)
+			require.NoError(t, err)
+			e.mu.Lock()
+			e.ids = append(e.ids, tc.id)
+			e.mu.Unlock()
+		})
+	}
+}
+
 func (e *StorageSuite) TestCreateWithoutErr() {
-	now := time.Now()
+	now := time.Now().UTC()
 	testCases := []struct {
 		name     string
 		id       string
@@ -244,7 +314,6 @@ func (e *StorageSuite) TestCreateWithoutErr() {
 	for _, tc := range testCases {
 		tc := tc
 		e.T().Run(tc.name, func(t *testing.T) {
-			t.Parallel()
 			event := storage.NewEvent(
 				tc.id,
 				tc.userID,
@@ -255,16 +324,22 @@ func (e *StorageSuite) TestCreateWithoutErr() {
 				time.Second)
 			err := e.rep.Create(e.ctx, event)
 			require.NoError(t, err)
+			e.mu.Lock()
+			e.ids = append(e.ids, event.ID())
+			e.mu.Unlock()
 		})
 	}
 }
 
 // Update.
 func (e *StorageSuite) TestUpdateWithoutErr() {
-	now := time.Now()
+	now := time.Now().UTC()
 	event := storage.NewEvent("1", "1", "", storage.EventDescription{}, now, time.Second, time.Second)
 	err := e.rep.Create(e.ctx, event)
 	require.NoError(e.T(), err)
+	e.mu.Lock()
+	e.ids = append(e.ids, event.ID())
+	e.mu.Unlock()
 
 	testCases := []struct {
 		name     string
@@ -295,14 +370,15 @@ func (e *StorageSuite) TestUpdateWithoutErr() {
 }
 
 func (e *StorageSuite) TestUpdateEventNotFoundGetErr() {
-	event := storage.NewEvent("1", "1", "", storage.EventDescription{}, time.Now(), time.Second, time.Second)
+	now := time.Now().UTC()
+	event := storage.NewEvent("1", "1", "", storage.EventDescription{}, now, time.Second, time.Second)
 	err := e.rep.Update(e.ctx, event.ID(), event)
 	require.ErrorIs(e.T(), err, storage.ErrNotFound)
 }
 
 // Delete.
 func (e *StorageSuite) TestDeleteWithoutErr() {
-	now := time.Now()
+	now := time.Now().UTC()
 	testCases := []struct {
 		name     string
 		id       string
@@ -334,7 +410,6 @@ func (e *StorageSuite) TestDeleteWithoutErr() {
 	for _, tc := range testCases {
 		tc := tc
 		e.T().Run(tc.name, func(t *testing.T) {
-			t.Parallel()
 			err := e.rep.Delete(e.ctx, tc.id)
 			require.NoError(t, err)
 		})

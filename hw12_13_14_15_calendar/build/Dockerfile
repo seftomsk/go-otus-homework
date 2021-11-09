@@ -25,7 +25,7 @@ FROM alpine:3.9
 
 LABEL ORGANIZATION="OTUS Online Education"
 LABEL SERVICE="calendar"
-LABEL MAINTAINERS="student@otus.ru"
+LABEL MAINTAINERS="seftomsk@gmail.com"
 
 ENV BIN_FILE "/opt/calendar/calendar-app"
 COPY --from=build ${BIN_FILE} ${BIN_FILE}

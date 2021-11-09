@@ -1,0 +1,21 @@
+{
+  "version": "0.1.0",
+  "environment": "dev",
+  "storage": "memory",
+  "database": {
+    "host": "localhost",
+    "port": "5432",
+    "name": "mydb",
+    "username": "admin",
+    "password": "admin"
+  },
+  "server": {
+    "host": "0.0.0.0",
+    "port": "8888"
+  },
+  "logger": {
+    "loglevel": "info",
+    "stderr": true,
+    "filename": "all.log"
+  }
+}
